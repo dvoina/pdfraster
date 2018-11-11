@@ -2,6 +2,7 @@ from flask import Flask, flash, request, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 
 import os
+from uuid import uuid1
 
 
 UPLOAD_FOLDER = '/tmp'
@@ -14,6 +15,16 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def pdf2png(pdf):
+    u = str(uuid1())
+    path = os.path.join(UPLOAD_FOLDER, u)
+    os.mkdir(path)
+    if os.system("pdfimages -png {} {}".format(os.path.join(UPLOAD_FOLDER, pdf), u)) == 0:
+        return os.path.join(UPLOAD_FOLDER, u+"-000.png")
+    else:
+        return None
 
 
 @app.route('/raster', methods=['GET', 'POST'])
@@ -33,7 +44,10 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             #return redirect(url_for('upload_file', filename=filename))
-            return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), mimetype='image/gif')
+            if filename.split(".")[-1]=="pdf":
+                return send_file(pdf2png(filename), mimetype='image/png')
+            else:
+                return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), mimetype='image/*')
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -46,4 +60,5 @@ def upload_file():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.debug = True
+    app.run(host="0.0.0.0")

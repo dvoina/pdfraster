@@ -9,7 +9,5 @@ RUN apk update --no-cache && apk add --no-cache  poppler poppler-utils python3 &
 COPY rasterizer /opt/rasterizer
 WORKDIR /tmp
 EXPOSE 5000
-ENTRYPOINT [ "python", "/opt/rasterizer/app.py", "--host", "0.0.0.0"]
-
-
+ENTRYPOINT [ "python", "/opt/rasterizer/app.py"]
 
