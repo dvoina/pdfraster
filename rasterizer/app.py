@@ -1,9 +1,8 @@
-from flask import Flask, flash, request, redirect, url_for, send_file
-from werkzeug.utils import secure_filename
-
 import os
 from uuid import uuid1
 
+from flask import Flask, flash, redirect, request, send_file, url_for
+from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['pdf', 'png', 'jpg', 'jpeg', 'gif'])
@@ -60,5 +59,5 @@ def upload_file():
 
 
 if __name__ == '__main__':
-    app.debug = True
-    app.run(host="0.0.0.0")
+    app.debug = False
+    app.run(host="0.0.0.0", port=80)

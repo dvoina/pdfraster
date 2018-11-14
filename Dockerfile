@@ -8,6 +8,6 @@ RUN apk update --no-cache && apk add --no-cache  poppler poppler-utils python3 &
     rm -r /root/.cache && pip install flask && mkdir -p /opt/rasterizer 
 COPY rasterizer /opt/rasterizer
 WORKDIR /tmp
-EXPOSE 5000
+EXPOSE 80
 ENTRYPOINT [ "python", "/opt/rasterizer/app.py"]
 
