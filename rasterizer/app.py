@@ -1,7 +1,8 @@
 import os
+from subprocess import check_call
 from uuid import uuid1
 
-from flask import Flask, flash, redirect, request, send_file, url_for
+from flask import Flask, flash, redirect, request, send_file, url_for, abort
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = '/tmp'
@@ -16,15 +17,14 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def pdf2png(pdf):
-    u = str(uuid1())
-    path = os.path.join(UPLOAD_FOLDER, u)
-    os.mkdir(path)
-    if os.system("pdfimages -png {} {}".format(os.path.join(UPLOAD_FOLDER, pdf), u)) == 0:
-        return os.path.join(UPLOAD_FOLDER, u+"-000.png")
-    else:
-        return None
-
+@app.route('/image/<image>', methods=['GET', 'DELETE'])
+def display(image):
+    if request.method == 'DELETE':
+        path = os.path.join(UPLOAD_FOLDER, image)
+        os.removedirs(path)
+        return "", 200
+    send_file(os.path.join(UPLOAD_FOLDER, image, image+"-0.png"))
+    
 
 @app.route('/raster', methods=['GET', 'POST'])
 def upload_file():
@@ -44,9 +44,20 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             #return redirect(url_for('upload_file', filename=filename))
             if filename.split(".")[-1]=="pdf":
-                return send_file(pdf2png(filename), mimetype='image/png')
+                u = str(uuid1())
+                path = os.path.join(UPLOAD_FOLDER, u)
+                os.mkdir(path)
+                dest = os.path.join(path, u+".png")
+                if check_call(["convert", "-density", "72", filename, dest]) == 0:
+                    if os.path.exists(dest):
+                        return send_file(dest, mimetype="image/png")
+                    else:
+                        dest = dest.replace(".png", "-0.png")
+                        return send_file(dest, mimetype="image/png")
+                return abort(404)
             else:
                 return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), mimetype='image/*')
+                
     return '''
     <!doctype html>
     <title>Upload new File</title>

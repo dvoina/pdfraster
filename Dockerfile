@@ -1,5 +1,5 @@
 FROM alpine:latest
-RUN apk update --no-cache && apk add --no-cache  poppler poppler-utils python3 && \
+RUN apk update --no-cache && apk add --no-cache  imagemagick python3 && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
